@@ -1,0 +1,10 @@
+input_dim: 2  # Total number of variables (positions + momenta) # Must be 2 for 1D_Gauss_mix and 4 for 2D_Gauss_mix
+len_sample: 50  # Length of each sample trajectory
+num_samples: 100  # Number of sample trajectories to generate
+test_fraction: 0.1  # Fraction of data to reserve for testing
+should_load: false  # Whether to load existing data
+load_dir: ""  # Directory to load data from
+load_file_name: ""  # Filename to load data from
+save_dir: "."  # Directory to save data to
+dist_name: "1D_Gauss_mix"  # Name of the target distribution
+seed: 0
