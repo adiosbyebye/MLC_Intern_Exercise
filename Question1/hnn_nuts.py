@@ -30,7 +30,7 @@ def load_config(config_path="config.yaml"):
 
 args =  Config(**load_config())
 
-##### User-defined sampling parameters #####
+
 N = args.num_samples   # number of samples
 burn = args.burn # number of burn-in samples
 epsilon = args.step_size # step size
@@ -61,7 +61,7 @@ def integrate_model(model, t_span, y0, n, **kwargs):
 
 def stop_criterion(thetaminus, thetaplus, rminus, rplus):
     dtheta = thetaplus - thetaminus
-    # We should stop if either (dtheta · rminus) < 0 or (dtheta · rplus) < 0
+    # Stop if either (dtheta · rminus) < 0 or (dtheta · rplus) < 0
     return (np.dot(dtheta, rminus) < 0.0) or (np.dot(dtheta, rplus) < 0.0)
 
 def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30):
