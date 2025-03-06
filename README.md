@@ -11,7 +11,7 @@ Part 1
 - run ./Question1/part1/hnn_train.py to train the L-HNN (parameters stored in config.yaml)
 - run ./Question1/part1/hnn_nuts.py to generate samples from the Posterior
 
-
+Part 2
 - run ./Question1/part2/generate_samples.py to generate training samples for the L-HNN (parameters stored in config_training_data.yaml, distribution fix to adhere to Gaussian with fixed/random effects)
 - run ./Question1/part2/train_hnn.py to train the L-HNN (parameters stored in config.yaml)
 - run ./Question1/part2/hnn_nuts.py to generate samples from the Posterior
