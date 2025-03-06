@@ -55,8 +55,6 @@ class HNN(tf.keras.Model):
 
     def permutation_tensor(self, n):
         # Construct the symplectic form for canonical coords:
-        # M = [[0, I],
-        #      [-I,0]] for q,p in R^(n/2).
         half = n // 2
         top = tf.concat([tf.zeros((half, half)), tf.eye(half)], axis=1)
         bottom = tf.concat([-tf.eye(half), tf.zeros((half, half))], axis=1)

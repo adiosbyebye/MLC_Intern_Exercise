@@ -128,7 +128,6 @@ def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30
     # ---------------
     if j == 0:
         print("in base case")
-        # Always integrate from [0, epsilon], no negative time
         t_span1 = [0, epsilon]
 
         # Combine positions and momentum into y1
@@ -146,7 +145,6 @@ def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30
         thetaprime = hnn_ivp1[1, 0:D]
         rprime = hnn_ivp1[1, D:args.input_dim]
 
-        # If we had flipped momentum going in, flip it back at the end
         if v == -1:
             rprime = -rprime
 
@@ -164,7 +162,6 @@ def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30
 
         if call_lf_bool:
             print("switched to numerical leapfrog==============================")
-            # We'll do the same single step from y1 using the basic dynamics_fn
             lf_ivp = leapfrog(dynamics_fn, t_span1, y1, 1, args.input_dim)
 
             # The final row of lf_ivp is the new state

@@ -116,7 +116,7 @@ def dynamics_fn(t, coords):
     # 2) Compute Hamiltonian and gradients w.r.t. coords
     with tf.GradientTape() as tape:
         tape.watch(coords)
-        H = functions(coords)  # "functions" is your Hamiltonian H(q,p)
+        H = functions(coords)  
     dcoords = tape.gradient(H, coords)  # shape: (input_dim,)
 
     # 3) Convert to NumPy for splitting/concatenation approach
@@ -289,4 +289,3 @@ if __name__ == "__main__":
     plt.title("Training coords: q vs p")
     plot_path = "./training_phase_plot.png"
     plt.savefig(plot_path)
-    # The data can now be used for training and evaluating models
