@@ -6,6 +6,7 @@ import tensorflow.python.ops.numpy_ops.np_config as np_config
 np_config.enable_numpy_behavior()
 import os
 import yaml
+import unittest
 from tqdm import tqdm
 from nn_models import MLP
 from hnn import HNN
