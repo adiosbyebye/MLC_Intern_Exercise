@@ -1,19 +1,18 @@
-dim_theta: 19  # Dimension of fixed-effect parameters (beta)
-dim_u: 12500
-S: 50            # Number of importance Samples
+dim_theta: 19  # dimension of theta (parameters of interest)
+dim_u: 500    # (1+dim_per_subject) * S * N => if S=2, N=50 => 5*2*50=500. 1 dimension for uniform mixture assignment
+S: 2            # Number of importance Samples
 N: 50                     # Number of subjects
 T: 6                      # Observations per subject
-#lambda_val: 10     # Precision (1/variance) of the random effects
 dim_per_subject: 4       # Dimension of each random effect (b_i)
 N_lf: 20  # "cool-down" steps if integration errors are high
 hnn_threshold: 10 # Threshold before manual integration substitutes L-HNN
 lf_threshold: 1000 # # Threshold before subtree is abandoned for NUTS
 max_tree_length: 8
-burn: 10 # Burn in samples for NUTS
+burn: 1000 # Burn in samples for NUTS
 test_fraction: 0.1
 len_sample: 30
 n_steps: 1000 # delta t (stepsize =  len_sample/n_steps)
-num_samples: 100
+num_samples: 8000
 dist_name: "GLMM"
 save_dir: "."
 load_dir: "."

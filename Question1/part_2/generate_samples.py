@@ -350,12 +350,15 @@ def get_dataset(seed=0):
     if args.should_load:
         path = f"{args.load_dir}/{args.load_file_name}.pkl"
         data = from_pickle(path)
+        print("Successfully loaded data")
     else:
         data = {}
         xs, dxs = [], []
         y_init = np.random.randn(2*(args.dim_theta + args.dim_u))
+        print("Generating PM-HMC samples (importance-sampling) for HNN training ...")
 
         for s in range(samples):
+            print(f"Sample {s + 1}/{samples}")
             lp_traj, dydt = get_pm_trajectory_unified(y0=y_init)
             xs.append(lp_traj)
             dxs.append(dydt)
