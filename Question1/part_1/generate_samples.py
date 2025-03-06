@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import unittest
 from scipy.stats import norm
 import matplotlib
 matplotlib.use('Agg')
@@ -267,25 +268,69 @@ def get_dataset(seed=0, **kwargs):
 
     return data
 
+
+class TestFunctions(unittest.TestCase):
+    def test_generate_glmm_data_mixture_shapes(self):
+        """
+        Tests whether generate_glmm_data_mixture returns outputs with
+        expected shapes.
+        """
+        X, Z, Y, b_true, beta_true = generate_glmm_data_mixture(
+            N=10, T=5, d_beta=3, D=2, w_true=0.5, seed=123
+        )
+        self.assertEqual(X.shape, (10, 5, 3))
+        self.assertEqual(Z.shape, (10, 5, 2))
+        self.assertEqual(Y.shape, (10, 5))
+        self.assertEqual(b_true.shape, (10, 2))
+        self.assertEqual(beta_true.shape, (3,))
+
+    def test_pm_potential_only_output(self):
+        """
+        Tests whether pm_potential_only runs without error
+        and returns a valid tensor.
+        """
+        d = args.dim_theta
+        S = args.S
+        dim_u = 5 * S * N_global
+        total_dim = d + dim_u
+        theta_u = tf.ones([total_dim], dtype=tf.float32)
+        result = pm_potential_only(theta_u)
+        self.assertTrue(isinstance(result, tf.Tensor))
+
+    def test_pm_functions_output(self):
+        """
+        Tests whether pm_functions runs without error
+        and returns a valid tensor.
+        """
+        d = args.dim_theta
+        dim_u = args.dim_u
+        coords = tf.ones([d + dim_u + d + dim_u], dtype=tf.float32)
+        result = pm_functions(coords)
+        self.assertTrue(isinstance(result, tf.Tensor))
+
+
 # Sample script to use the module
 if __name__ == "__main__":
-    # Generate the dataset
-    args =  Config(**load_config())
-    data = get_dataset()
+    if len(sys.argv) > 1 and sys.argv[1] == "test":
+        unittest.main(argv=[''], exit=False)
+    else:
+        # Generate the dataset
+        args =  Config(**load_config())
+        data = get_dataset()
 
-    # Access the training and test data
-    coords_train = data['coords']
-    dcoords_train = data['dcoords']
-    coords_test = data['test_coords']
-    dcoords_test = data['test_dcoords']
+        # Access the training and test data
+        coords_train = data['coords']
+        dcoords_train = data['dcoords']
+        coords_test = data['test_coords']
+        dcoords_test = data['test_dcoords']
 
-    print(f"Training coords shape: {coords_train.shape}")
-    print(f"Training dcoords shape: {dcoords_train.shape}")
-    print(f"Test coords shape: {coords_test.shape}")
-    print(f"Test dcoords shape: {dcoords_test.shape}")
-    print("done")
+        print(f"Training coords shape: {coords_train.shape}")
+        print(f"Training dcoords shape: {dcoords_train.shape}")
+        print(f"Test coords shape: {coords_test.shape}")
+        print(f"Test dcoords shape: {dcoords_test.shape}")
+        print("done")
 
-    plt.scatter(data['coords'][:, 0], data['coords'][:, 1], s=2)
-    plt.title("Training coords: q vs p")
-    plot_path = "./training_phase_plot.png"
-    plt.savefig(plot_path)
+        plt.scatter(data['coords'][:, 0], data['coords'][:, 1], s=2)
+        plt.title("Training coords: q vs p")
+        plot_path = "./training_phase_plot.png"
+        plt.savefig(plot_path)

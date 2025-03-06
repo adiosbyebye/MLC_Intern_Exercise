@@ -64,7 +64,7 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
     # Stop if either (dtheta · rminus) < 0 or (dtheta · rplus) < 0
     return (np.dot(dtheta, rminus) < 0.0) or (np.dot(dtheta, rplus) < 0.0)
 
-def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30):
+def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=args.max_tree_length):
     """
     Recursively build the binary tree for NUTS:
     - If j == 0, take a single step.
@@ -235,110 +235,127 @@ def build_tree(theta, r, logu, v, j, epsilon, joint0, call_lf, max_tree_depth=30
 
 #################################################################
 ##################### Actual Sampling ###########################
-D = int(args.input_dim / 2)
-M = N
-Madapt = 0
-theta0 = np.ones(D, dtype=np.float32)
+def main():
+    D = int(args.input_dim / 2)
+    M = N
+    Madapt = 0
+    theta0 = np.ones(D, dtype=np.float32)
 
-samples = np.empty((M + Madapt, D), dtype=float)
-samples[0, :] = theta0
+    samples = np.empty((M + Madapt, D), dtype=float)
+    samples[0, :] = theta0
 
-y0 = np.zeros(args.input_dim)
-# Initialize momenta with Normal(0,1)
-for ii in range(0, D):
-    y0[ii] = np.random.randn()
-for ii in range(D, args.input_dim):
-    y0[ii] = np.random.randn()
-
-HNN_accept = np.ones(M)
-traj_len = np.zeros(M)
-alpha_req = np.zeros(M)
-H_store = np.zeros(M)
-monitor_err = np.zeros(M)
-call_lf = 0
-counter_lf = 0
-is_lf = np.zeros(M)
-
-# print(samples)
-
-momentum_samples = np.empty((M + Madapt, D), dtype=float)
-momentum_samples[0, :] = y0[D:args.input_dim]
-
-for m in range(1, M + Madapt):
-    print(m)
-    # --------------------------------------------------
-    # 1) Refresh momentum, build tree, accept new sample
-    # --------------------------------------------------
-    # (same as before)
+    y0 = np.zeros(args.input_dim)
+    # Initialize momenta with Normal(0,1)
+    for ii in range(0, D):
+        y0[ii] = np.random.randn()
     for ii in range(D, args.input_dim):
         y0[ii] = np.random.randn()
 
-    joint = functions(y0[None, :])
-    joint0_val = float(joint.numpy()[0])
-    u_val = np.random.uniform(0, np.exp(-joint0_val))
-    logu_val = np.log(u_val)
+    HNN_accept = np.ones(M)
+    traj_len = np.zeros(M)
+    alpha_req = np.zeros(M)
+    H_store = np.zeros(M)
+    monitor_err = np.zeros(M)
+    call_lf = 0
+    counter_lf = 0
+    is_lf = np.zeros(M)
 
-    samples[m, :] = samples[m - 1, :]
-    momentum_samples[m, :] = momentum_samples[m - 1, :]
+    # print(samples)
 
-    thetaminus = samples[m - 1, :]
-    thetaplus = samples[m - 1, :]
-    rminus = y0[D:args.input_dim]
-    rplus = y0[D:args.input_dim]
+    momentum_samples = np.empty((M + Madapt, D), dtype=float)
+    momentum_samples[0, :] = y0[D:args.input_dim]
 
-    j = 0
-    n = 1
-    s = 1
-    if call_lf:
-        counter_lf += 1
-    if counter_lf == N_lf:
-        call_lf = 0
-        counter_lf = 0
+    for m in range(1, M + Madapt):
+        print(m)
+        # --------------------------------------------------
+        # 1) Refresh momentum, build tree, accept new sample
+        # --------------------------------------------------
+        # (same as before)
+        for ii in range(D, args.input_dim):
+            y0[ii] = np.random.randn()
 
-    while s == 1:
-        v = int(2 * (np.random.uniform() < 0.5) - 1)
-        if v == -1:
-            (thetaminus, rminus, _, _, thetaprime, rprime,
-             nprime, sprime, alpha, nalpha, monitor, call_lf) = build_tree(
-                thetaminus, rminus, logu_val, v, j, epsilon, joint0_val, call_lf
-            )
-        else:
-            (_, _, thetaplus, rplus, thetaprime, rprime,
-             nprime, sprime, alpha, nalpha, monitor, call_lf) = build_tree(
-                thetaplus, rplus, logu_val, v, j, epsilon, joint0_val, call_lf
-            )
+        joint = functions(y0[None, :])
+        joint0_val = float(joint.numpy()[0])
+        u_val = np.random.uniform(0, np.exp(-joint0_val))
+        logu_val = np.log(u_val)
 
-        if (sprime == 1) and (np.random.uniform() < float(nprime) / float(n)):
-            samples[m, :] = thetaprime[:]
-            momentum_samples[m, :] = rprime[:]
-            r_sto = rprime
+        samples[m, :] = samples[m - 1, :]
+        momentum_samples[m, :] = momentum_samples[m - 1, :]
 
-        n += nprime
-        s = sprime and (not stop_criterion(thetaminus, thetaplus, rminus, rplus))
-        j += 1
-        monitor_err[m] = monitor
+        thetaminus = samples[m - 1, :]
+        thetaplus = samples[m - 1, :]
+        rminus = y0[D:args.input_dim]
+        rplus = y0[D:args.input_dim]
 
-    is_lf[m] = int(call_lf)
-    traj_len[m] = j
-    alpha_req[m] = alpha
+        j = 0
+        n = 1
+        s = 1
+        if call_lf:
+            counter_lf += 1
+        if counter_lf == N_lf:
+            call_lf = 0
+            counter_lf = 0
 
-    # Store final Hamiltonian
-    y0[0:D] = samples[m, :]
-    coords_sto = np.concatenate((samples[m, :], r_sto), axis=0).reshape(1, args.input_dim)
-    H_val = functions(coords_sto)
-    H_store[m] = float(H_val.numpy()[0])
+        while s == 1:
+            v = int(2 * (np.random.uniform() < 0.5) - 1)
+            if v == -1:
+                (thetaminus, rminus, _, _, thetaprime, rprime,
+                nprime, sprime, alpha, nalpha, monitor, call_lf) = build_tree(
+                    thetaminus, rminus, logu_val, v, j, epsilon, joint0_val, call_lf
+                )
+            else:
+                (_, _, thetaplus, rplus, thetaprime, rprime,
+                nprime, sprime, alpha, nalpha, monitor, call_lf) = build_tree(
+                    thetaplus, rplus, logu_val, v, j, epsilon, joint0_val, call_lf
+                )
 
-# ------------------- Plotting Distribution ----------------------------
-samples_lhnn = samples  # shape (M, D)
+            if (sprime == 1) and (np.random.uniform() < float(nprime) / float(n)):
+                samples[m, :] = thetaprime[:]
+                momentum_samples[m, :] = rprime[:]
+                r_sto = rprime
 
-# ------------------- Plot #1: L-HNN+NUTS histogram -------------------
-plt.figure(figsize=(7, 5))
-plt.hist(samples_lhnn[:, 0], bins=50, color='skyblue', edgecolor='k')
-plt.xlabel('theta[0]')
-plt.ylabel('Counts')
-plt.title('Histogram of theta[0] (L-HNN+NUTS)')
-plt.grid(True, alpha=0.3)
-# plt.savefig("hist_LHNN_NUTS.png", dpi=300)
-plt.savefig("hist_PureLeapfrog.png", dpi=300)
-plt.close()
+            n += nprime
+            s = sprime and (not stop_criterion(thetaminus, thetaplus, rminus, rplus))
+            j += 1
+            monitor_err[m] = monitor
 
+        is_lf[m] = int(call_lf)
+        traj_len[m] = j
+        alpha_req[m] = alpha
+
+        # Store final Hamiltonian
+        y0[0:D] = samples[m, :]
+        coords_sto = np.concatenate((samples[m, :], r_sto), axis=0).reshape(1, args.input_dim)
+        H_val = functions(coords_sto)
+        H_store[m] = float(H_val.numpy()[0])
+
+    # ------------------- Plotting Distribution ----------------------------
+    samples_lhnn = samples  # shape (M, D)
+
+    # ------------------- Plot #1: L-HNN+NUTS histogram -------------------
+    plt.figure(figsize=(7, 5))
+    plt.hist(samples_lhnn[:, 0], bins=50, color='skyblue', edgecolor='k')
+    plt.xlabel('theta[0]')
+    plt.ylabel('Counts')
+    plt.title('Histogram of theta[0] (L-HNN+NUTS)')
+    plt.grid(True, alpha=0.3)
+    # plt.savefig("hist_LHNN_NUTS.png", dpi=300)
+    plt.savefig("hist_PureLeapfrog.png", dpi=300)
+    plt.close()
+
+class TestNUTSSampler(unittest.TestCase):
+    def test_stop_criterion(self):
+        thetaminus = np.array([0.0, 0.0])
+        thetaplus  = np.array([1.0, 1.0])
+        rminus     = np.array([ 0.5,  0.5])
+        rplus      = np.array([-0.5, -0.5])
+        result = stop_criterion(thetaminus, thetaplus, rminus, rplus)
+        # (dtheta = [1,1]) dot rminus = 1, dot rplus = -1
+        # This should return True if either < 0 => second dot < 0 => True
+        self.assertTrue(result)
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "test":
+        unittest.main(argv=[''], exit=False)
+    else:
+        main()

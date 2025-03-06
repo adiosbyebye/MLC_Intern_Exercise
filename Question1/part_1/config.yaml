@@ -3,6 +3,7 @@ N_lf: 20  # "cool-down" steps if integration errors are high
 hnn_threshold: 10 # Threshold before manual integration substitutes L-HNN
 lf_threshold: 1000 # # Threshold before subtree is abandoned for NUTS
 burn: 1000 # Burn in samples for NUTS
+max_tree_length: 8
 test_fraction: 0.1
 len_sample: 20
 num_samples: 8000
