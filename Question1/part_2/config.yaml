@@ -1,0 +1,29 @@
+dim_theta: 19  # Dimension of fixed-effect parameters (beta)
+dim_u: 12500
+S: 50            # Number of importance Samples
+N: 50                     # Number of subjects
+T: 6                      # Observations per subject
+#lambda_val: 10     # Precision (1/variance) of the random effects
+dim_per_subject: 4       # Dimension of each random effect (b_i)
+N_lf: 20  # "cool-down" steps if integration errors are high
+hnn_threshold: 10 # Threshold before manual integration substitutes L-HNN
+lf_threshold: 1000 # # Threshold before subtree is abandoned for NUTS
+max_tree_length: 8
+burn: 10 # Burn in samples for NUTS
+test_fraction: 0.1
+len_sample: 30
+n_steps: 1000 # delta t (stepsize =  len_sample/n_steps)
+num_samples: 100
+dist_name: "GLMM"
+save_dir: "."
+load_dir: "."
+latent_dim: 64
+should_load: true
+hidden_dim: 500
+total_steps: 8000 # for training
+learn_rate: 0.0005
+batch_size: 1000
+nonlinearity: "sine"
+print_every: 200
+field_type: "solenoidal"
+seed: 0
